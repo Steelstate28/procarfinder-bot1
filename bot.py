@@ -27,8 +27,8 @@ class Form(StatesGroup):
 
 languages = {
     'ua': '🇺🇦 Українська',
-    'ru': '🇷🇺 Русский',
-    'en': '🇬🇧 English'
+    'ru': 'Русский',
+    'en': '🇺🇸 English'
 }
 
 texts = {
@@ -45,6 +45,34 @@ texts = {
         'ask_photo': "Надішли до 5 фото авто або натисни 'Пропустити':",
         'ask_document': "Прикріпи файл (Carfax, інвойс тощо) або натисни 'Пропустити':",
         'thanks': "Дякую! Заявка відправлена. Ми з тобою зв’яжемось."
+    },
+    'ru': {
+        'start': "Привет! Я бот команды “ProCARFINDER”. Нажми кнопку ниже 👇",
+        'ask_description': "Опиши, какую машину ищешь:",
+        'ask_budget': "Какой у тебя бюджет?",
+        'ask_title': "Какой тип тайтла тебе интересует?",
+        'ask_accident': "Рассматриваешь авто после ДТП?",
+        'ask_location': "Отправь геолокацию или напиши город доставки:",
+        'ask_contact': "Оставь контакт (телефон или @ник):",
+        'ask_package': "Выбери пакет:",
+        'ask_extra': "Хочешь добавить что-то? Напиши или нажми 'Пропустить':",
+        'ask_photo': "Пришли до 5 фото авто или нажми 'Пропустить':",
+        'ask_document': "Прикрепи файл (Carfax, invoice и т.д.) или нажми 'Пропустить':",
+        'thanks': "Спасибо! Заявка отправлена. Мы скоро свяжемся с тобой."
+    },
+    'en': {
+        'start': "Hi! I’m the ProCARFINDER bot. Press the button below to begin 👇",
+        'ask_description': "Describe the car you're looking for:",
+        'ask_budget': "What's your budget?",
+        'ask_title': "What title type are you interested in?",
+        'ask_accident': "Are you open to cars with accident history?",
+        'ask_location': "Send your location or delivery city:",
+        'ask_contact': "Leave your contact (phone or @username):",
+        'ask_package': "Choose a service package:",
+        'ask_extra': "Want to add anything else? Type it or press 'Skip':",
+        'ask_photo': "Send up to 5 car photos or press 'Skip':",
+        'ask_document': "Attach a document (Carfax, invoice, etc.) or press 'Skip':",
+        'thanks': "Thank you! Your request has been submitted. We'll get in touch with you soon."
     }
 }
 
@@ -208,6 +236,3 @@ if __name__ == '__main__':
         await dp.start_polling()
 
     asyncio.run(main())
-
-
-   
