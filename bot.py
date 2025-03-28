@@ -50,8 +50,19 @@ texts = {
 
 @dp.message_handler(commands='start')
 async def start_handler(message: types.Message, state: FSMContext):
-    kb = InlineKeyboardMarkup().add(InlineKeyboardButton("🚀 Запустити", callback_data='start_form'))
-    await message.answer("Привіт! Я бот команди “ЗАЛІЗНИЙ ШТАТ”. Щоб почати, натисни кнопку нижче:", reply_markup=kb)
+    start_btn = InlineKeyboardMarkup().add(
+        InlineKeyboardButton("🚀 Запустити", callback_data='begin')
+    )
+    await message.answer("Щоб почати, натисни кнопку нижче:", reply_markup=start_btn)
+
+@dp.callback_query_handler(lambda call: call.data == 'begin')
+async def begin_form(call: types.CallbackQuery, state: FSMContext):
+    kb = ReplyKeyboardMarkup(resize_keyboard=True)
+    for code, label in languages.items():
+        kb.add(KeyboardButton(label))
+    await call.message.answer("Привіт! Я бот команди “ЗАЛІЗНИЙ ШТАТ”. Вибери мову:", reply_markup=kb)
+    await Form.language.set()
+
 
 @dp.callback_query_handler(lambda c: c.data == 'start_form')
 async def start_form(callback_query: types.CallbackQuery, state: FSMContext):
