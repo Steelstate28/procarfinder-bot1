@@ -27,7 +27,7 @@ class Form(StatesGroup):
 
 languages = {
     'ua': '🇺🇦 Українська',
-    'ru': 'Русский',
+    'ru': ' Русский',
     'en': '🇺🇸 English'
 }
 
@@ -78,7 +78,7 @@ texts = {
 
 @dp.message_handler(commands='start')
 async def start_handler(message: types.Message, state: FSMContext):
-    inline_kb = InlineKeyboardMarkup().add(InlineKeyboardButton("🚀 Розпочати", callback_data="begin"))
+    inline_kb = InlineKeyboardMarkup().add(InlineKeyboardButton("🚀", callback_data="begin"))
     await message.answer(texts['ua']['start'], reply_markup=inline_kb)
 
 @dp.callback_query_handler(lambda c: c.data == 'begin')
@@ -236,3 +236,4 @@ if __name__ == '__main__':
         await dp.start_polling()
 
     asyncio.run(main())
+
