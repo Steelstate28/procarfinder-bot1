@@ -177,8 +177,9 @@ async def send_final_submission(message, state):
     if 'document' in data:
         await bot.send_document(chat_id=ADMIN_ID, document=data['document'])
     await bot.send_message(chat_id=ADMIN_ID, text=text)
-    await message.answer(texts[data['lang']]['thanks'], reply_markup=ReplyKeyboardRemove())
-    await state.finish()
+await message.answer(texts[data['lang']]['thanks'], reply_markup=ReplyKeyboardRemove())
+await state.finish()
+await start_handler(message, state)
 
 if __name__ == '__main__':
     print("Bot is running...")
