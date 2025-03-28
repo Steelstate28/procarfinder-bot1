@@ -176,14 +176,16 @@ async def send_final_submission(message, state):
             await bot.send_photo(chat_id=ADMIN_ID, photo=pid)
     if 'document' in data:
         await bot.send_document(chat_id=ADMIN_ID, document=data['document'])
-    await bot.send_message(chat_id=ADMIN_ID, text=text)
-await message.answer(texts[data['lang']]['thanks'], reply_markup=ReplyKeyboardRemove())
-await state.finish()
-await start_handler(message, state)
 
-if __name__ == '__main__':
+    await bot.send_message(chat_id=ADMIN_ID, text=text)
+    await message.answer(texts[data['lang']]['thanks'], reply_markup=ReplyKeyboardRemove())
+    await state.finish()
+    await start_handler(message, state)
+
+    if __name__ == '__main__':
     print("Bot is running...")
     executor.start_polling(dp, skip_updates=True)
+
 
 
 
