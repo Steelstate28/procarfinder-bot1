@@ -43,9 +43,8 @@ texts = {
         'ask_extra': "Хочеш щось додати до заявки?",
         'ask_photo': "Надішли до 5 фото авто або натисни 'Пропустити':",
         'ask_document': "Прикріпи файл (Carfax, інвойс тощо) або натисни 'Пропустити':",
-        'thanks': "Дякую! Заявка відправлена. Ми з тобою зв’яжемось."
+        'thanks': "Дякую! Заявка відправлена. Ми з тобою зв'яжемось."
     }
-    # Додати 'ru' та 'en' за потребою
 }
 
 @dp.message_handler(commands='start')
@@ -60,141 +59,132 @@ async def begin_form(call: types.CallbackQuery, state: FSMContext):
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
     for code, label in languages.items():
         kb.add(KeyboardButton(label))
-    await call.message.answer("Привіт! Я бот команди “ЗАЛІЗНИЙ ШТАТ”. Вибери мову:", reply_markup=kb)
-    await Form.language.set()
-
-
-@dp.callback_query_handler(lambda c: c.data == 'start_form')
-async def start_form(callback_query: types.CallbackQuery, state: FSMContext):
-    kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    for code, label in languages.items():
-        kb.add(KeyboardButton(label))
-    await bot.send_message(callback_query.from_user.id, "Обери мову:", reply_markup=kb)
+    await call.message.answer(texts['ua']['start'], reply_markup=kb)
     await Form.language.set()
 
 @dp.message_handler(state=Form.language)
-async def set_language(message: types.Message, state: FSMContext):
+async def ask_description(message: types.Message, state: FSMContext):
     selected = [k for k, v in languages.items() if v == message.text]
     if not selected:
         await message.answer("Будь ласка, вибери мову з клавіатури.")
         return
     lang = selected[0]
     await state.update_data(lang=lang)
-    await Form.description.set()
     await message.answer(texts[lang]['ask_description'], reply_markup=ReplyKeyboardRemove())
+    await Form.description.set()
 
 @dp.message_handler(state=Form.description)
 async def ask_budget(message: types.Message, state: FSMContext):
     await state.update_data(description=message.text)
     lang = (await state.get_data())['lang']
-    await Form.budget.set()
     await message.answer(texts[lang]['ask_budget'])
+    await Form.budget.set()
 
 @dp.message_handler(state=Form.budget)
 async def ask_title(message: types.Message, state: FSMContext):
     await state.update_data(budget=message.text)
     lang = (await state.get_data())['lang']
-    await Form.title_type.set()
     await message.answer(texts[lang]['ask_title'])
+    await Form.title_type.set()
 
 @dp.message_handler(state=Form.title_type)
 async def ask_accident(message: types.Message, state: FSMContext):
     await state.update_data(title_type=message.text)
     lang = (await state.get_data())['lang']
-    await Form.accident.set()
     await message.answer(texts[lang]['ask_accident'])
+    await Form.accident.set()
 
 @dp.message_handler(state=Form.accident)
 async def ask_location(message: types.Message, state: FSMContext):
     await state.update_data(accident=message.text)
     lang = (await state.get_data())['lang']
+    await message.answer(texts[lang]['ask_location'])
     await Form.location.set()
-    geo_button = KeyboardButton("📍 Надіслати геолокацію", request_location=True)
-    skip_btn = KeyboardButton("Пропустити")
-    kb = ReplyKeyboardMarkup(resize_keyboard=True).add(geo_button).add(skip_btn)
-    await message.answer(texts[lang]['ask_location'], reply_markup=kb)
 
-@dp.message_handler(content_types=types.ContentType.LOCATION, state=Form.location)
-async def location_received(message: types.Message, state: FSMContext):
-    loc = f"{message.location.latitude}, {message.location.longitude}"
-    await state.update_data(location=loc)
-    lang = (await state.get_data())['lang']
-    await Form.contact.set()
-    await message.answer(texts[lang]['ask_contact'], reply_markup=ReplyKeyboardRemove())
-
-@dp.message_handler(state=Form.location)
+@dp.message_handler(content_types=['location', 'text'], state=Form.location)
 async def ask_contact(message: types.Message, state: FSMContext):
-    await state.update_data(location=message.text)
+    if message.location:
+        location_text = f"{message.location.latitude}, {message.location.longitude}"
+    else:
+        location_text = message.text
+    await state.update_data(location=location_text)
     lang = (await state.get_data())['lang']
+    await message.answer(texts[lang]['ask_contact'])
     await Form.contact.set()
-    await message.answer(texts[lang]['ask_contact'], reply_markup=ReplyKeyboardRemove())
 
 @dp.message_handler(state=Form.contact)
 async def ask_package(message: types.Message, state: FSMContext):
     await state.update_data(contact=message.text)
     lang = (await state.get_data())['lang']
-    await Form.package.set()
     await message.answer(texts[lang]['ask_package'])
+    await Form.package.set()
 
 @dp.message_handler(state=Form.package)
 async def ask_extra(message: types.Message, state: FSMContext):
     await state.update_data(package=message.text)
     lang = (await state.get_data())['lang']
-    skip_btn = ReplyKeyboardMarkup(resize_keyboard=True).add(KeyboardButton("Пропустити"))
+    btn = ReplyKeyboardMarkup(resize_keyboard=True).add(KeyboardButton("Пропустити"))
+    await message.answer(texts[lang]['ask_extra'], reply_markup=btn)
     await Form.extra.set()
-    await message.answer(texts[lang]['ask_extra'], reply_markup=skip_btn)
 
 @dp.message_handler(state=Form.extra)
 async def ask_photo(message: types.Message, state: FSMContext):
     await state.update_data(extra=message.text)
     lang = (await state.get_data())['lang']
-    skip_btn = ReplyKeyboardMarkup(resize_keyboard=True).add(KeyboardButton("Пропустити"))
+    btn = ReplyKeyboardMarkup(resize_keyboard=True).add(KeyboardButton("Пропустити"))
+    await message.answer(texts[lang]['ask_photo'], reply_markup=btn)
     await Form.photo.set()
-    await message.answer(texts[lang]['ask_photo'], reply_markup=skip_btn)
 
-@dp.message_handler(content_types=types.ContentType.PHOTO, state=Form.photo)
-async def save_photos(message: types.Message, state: FSMContext):
-    data = await state.get_data()
-    photos = data.get("photos", [])
-    photos.append(message.photo[-1].file_id)
-    await state.update_data(photos=photos)
+@dp.message_handler(state=Form.photo, content_types=types.ContentType.PHOTO)
+async def ask_document(message: types.Message, state: FSMContext):
+    photos = [photo.file_id for photo in message.photo]
+    await state.update_data(photo=photos)
+    lang = (await state.get_data())['lang']
+    btn = ReplyKeyboardMarkup(resize_keyboard=True).add(KeyboardButton("Пропустити"))
+    await message.answer(texts[lang]['ask_document'], reply_markup=btn)
+    await Form.document.set()
 
 @dp.message_handler(state=Form.photo)
-async def ask_document(message: types.Message, state: FSMContext):
-    lang = (await state.get_data())['lang']
-    await Form.document.set()
-    await message.answer(texts[lang]['ask_document'])
+async def skip_photo(message: types.Message, state: FSMContext):
+    if message.text.lower() in ["пропустити", "skip"]:
+        await state.update_data(photo=None)
+        lang = (await state.get_data())['lang']
+        await message.answer(texts[lang]['ask_document'])
+        await Form.document.set()
 
-@dp.message_handler(content_types=types.ContentType.DOCUMENT, state=Form.document)
-async def save_document(message: types.Message, state: FSMContext):
+@dp.message_handler(state=Form.document, content_types=types.ContentType.DOCUMENT)
+async def finish_form(message: types.Message, state: FSMContext):
     await state.update_data(document=message.document.file_id)
-    await finish(message, state)
+    await send_summary(message, state)
 
 @dp.message_handler(state=Form.document)
 async def skip_document(message: types.Message, state: FSMContext):
-    await finish(message, state)
+    if message.text.lower() in ["пропустити", "skip"]:
+        await state.update_data(document=None)
+        await send_summary(message, state)
 
-async def finish(message: types.Message, state: FSMContext):
+def format_summary(data, user):
+    return (
+        f"📥 Нова заявка від {user.full_name} (@{user.username}):\n\n"
+        f"🚗 Машина: {data['description']}\n"
+        f"💰 Бюджет: {data['budget']}\n"
+        f"📄 Тайтл: {data['title_type']}\n"
+        f"💥 ДТП: {data['accident']}\n"
+        f"📍 Доставка: {data['location']}\n"
+        f"📞 Контакт: {data['contact']}\n"
+        f"🛠️ Пакет: {data['package']}\n"
+        f"✍️ Додатково: {data['extra']}"
+    )
+
+async def send_summary(message, state):
     data = await state.get_data()
-    text = f"📥 Нова заявка від {message.from_user.full_name} (@{message.from_user.username}):\n\n" \
-           f"🚗 Машина: {data['description']}\n" \
-           f"💰 Бюджет: {data['budget']}\n" \
-           f"📄 Тайтл: {data['title_type']}\n" \
-           f"💥 ДТП: {data['accident']}\n" \
-           f"📦 Доставка: {data['location']}\n" \
-           f"📞 Контакт: {data['contact']}\n" \
-           f"🛠️ Пакет: {data['package']}\n" \
-           f"✍️ Додатково: {data['extra']}\n"
-
-    await bot.send_message(chat_id=ADMIN_ID, text=text)
-
-    if 'photos' in data:
-        for pid in data['photos'][:5]:
-            await bot.send_photo(chat_id=ADMIN_ID, photo=pid)
-
-    if 'document' in data:
-        await bot.send_document(chat_id=ADMIN_ID, document=data['document'])
-
+    summary = format_summary(data, message.from_user)
+    await bot.send_message(ADMIN_ID, summary)
+    if data.get('photo'):
+        for pid in data['photo']:
+            await bot.send_photo(ADMIN_ID, pid)
+    if data.get('document'):
+        await bot.send_document(ADMIN_ID, data['document'])
     lang = data['lang']
     await message.answer(texts[lang]['thanks'], reply_markup=ReplyKeyboardRemove())
     await state.finish()
