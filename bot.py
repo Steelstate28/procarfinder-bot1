@@ -183,8 +183,8 @@ async def send_final_submission(message, state):
     await start_handler(message, state)
 
     if __name__ == '__main__':
-    print("Bot is running...")
-    executor.start_polling(dp, skip_updates=True)
+        print("Bot is running...")
+        executor.start_polling(dp, skip_updates=True)
 
 
 
