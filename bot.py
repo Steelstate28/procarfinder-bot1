@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup,
-                           InlineKeyboardButton, ReplyKeyboardRemove, InputMediaPhoto)
+                           InlineKeyboardButton, ReplyKeyboardRemove, InputMediaPhoto, BotCommand)
 from aiogram.utils import executor
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -33,7 +33,7 @@ languages = {
 
 texts = {
     'ua': {
-        'start': "Привіт! Я бот команди \u201cЗАЛІЗНИЙ ШТАТ\u201d. Вибери мову:",
+        'start': "Привіт! Я бот команди “ЗАЛІЗНИЙ ШТАТ”. Натисни кнопку нижче, щоб розпочати 👇",
         'ask_description': "Опиши, яку машину шукаєш:",
         'ask_budget': "Який у тебе бюджет?",
         'ask_title': "Який тип тайтлу тебе цікавить?",
@@ -44,16 +44,21 @@ texts = {
         'ask_extra': "Хочеш щось додати до заявки? Напиши або натисни 'Пропустити':",
         'ask_photo': "Надішли до 5 фото авто або натисни 'Пропустити':",
         'ask_document': "Прикріпи файл (Carfax, інвойс тощо) або натисни 'Пропустити':",
-        'thanks': "Дякую! Заявка відправлена. Ми з тобою зв\u2019яжемось."
+        'thanks': "Дякую! Заявка відправлена. Ми з тобою зв’яжемось."
     }
 }
 
 @dp.message_handler(commands='start')
 async def start_handler(message: types.Message, state: FSMContext):
+    inline_kb = InlineKeyboardMarkup().add(InlineKeyboardButton("🚀 Розпочати", callback_data="begin"))
+    await message.answer(texts['ua']['start'], reply_markup=inline_kb)
+
+@dp.callback_query_handler(lambda c: c.data == 'begin')
+async def begin_form(callback_query: types.CallbackQuery, state: FSMContext):
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
     for code, label in languages.items():
         kb.add(KeyboardButton(label))
-    await message.answer(texts['ua']['start'], reply_markup=kb)
+    await bot.send_message(callback_query.from_user.id, "Оберіть мову:", reply_markup=kb)
     await Form.language.set()
 
 @dp.message_handler(state=Form.language)
@@ -77,8 +82,10 @@ async def ask_budget(message: types.Message, state: FSMContext):
 async def ask_title(message: types.Message, state: FSMContext):
     await state.update_data(budget=message.text)
     lang = (await state.get_data())['lang']
+    kb = ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add(KeyboardButton("Clean"), KeyboardButton("Salvage"))
     await Form.title_type.set()
-    await message.answer(texts[lang]['ask_title'])
+    await message.answer(texts[lang]['ask_title'], reply_markup=kb)
 
 @dp.message_handler(state=Form.title_type)
 async def ask_accident(message: types.Message, state: FSMContext):
@@ -186,6 +193,21 @@ async def finish(message: types.Message, state: FSMContext):
     await message.answer(texts[lang]['thanks'], reply_markup=ReplyKeyboardRemove())
     await state.finish()
 
+async def set_commands(bot: Bot):
+    commands = [
+        types.BotCommand(command="start", description="Розпочати роботу з ботом")
+    ]
+    await bot.set_my_commands(commands)
+
 if __name__ == '__main__':
-    print("Bot is running...")
-    executor.start_polling(dp, skip_updates=True)
+    import asyncio
+
+    async def main():
+        await set_commands(bot)
+        print("Bot is running...")
+        await dp.start_polling()
+
+    asyncio.run(main())
+
+
+   
