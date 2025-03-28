@@ -91,7 +91,11 @@ async def begin_form(callback_query: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state=Form.language)
 async def set_language(message: types.Message, state: FSMContext):
-    lang = next((k for k, v in languages.items() if v == message.text), None)
+    lang = None
+for code, label in languages.items():
+    if message.text in label:
+        lang = code
+        break
     if not lang:
         await message.answer("Будь ласка, вибери мову з клавіатури.")
         return
