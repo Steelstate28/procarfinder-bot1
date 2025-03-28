@@ -1,4 +1,10 @@
+aiohttp==3.8.5
 aiogram==2.25.1
-aiohttp==3.8.1
+async-timeout==4.0.2
 certifi
+charset-normalizer
+idna
+multidict
 python-dotenv
+typing-extensions
+yarl
